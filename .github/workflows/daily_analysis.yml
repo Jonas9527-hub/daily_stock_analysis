@@ -4,6 +4,12 @@ on:
   # 定时触发 - 每天北京时间 18:00 (UTC 10:00)
   schedule:
     - cron: '0 10 * * 1-5'     # 周一到周五，UTC 10:00 = 北京时间 18:00
+on:
+  schedule:
+    # 北京时间 12:00 = UTC 4:00
+    - cron: '0 4 * * *'
+    # 北京时间 18:00 = UTC 10:00
+    - cron: '0 10 * * *'  
   
   # 手动触发
   workflow_dispatch:
@@ -289,30 +295,3 @@ jobs:
             echo "📜 最近日志（最后 30 行）:"
             tail -30 logs/stock_analysis_*.log 2>/dev/null || echo "无日志"
           fi
-
-      - name: 发送飞书报告
-        if: always()
-        env:
-          WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
-        run: |
-          REPORT_FILE=$(ls reports/*.md | tail -1)
-          SUMMARY=$(head -n 100 "$REPORT_FILE" | sed 's/"/\\"/g')
-          curl -X POST "$WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"msg_type\": \"post\",
-              \"content\": {
-                \"post\": {
-                  \"zh_cn\": {
-                    \"title\": \"📊 每日股票分析报告\",
-                    \"content\": [
-                      [
-                        { \"tag\": \"text\", \"text\": \"运行时间：${{ github.run_started_at }}\n\n\" },
-                        { \"tag\": \"text\", \"text\": \"报告摘要：\n$SUMMARY\n\n\" },
-                        { \"tag\": \"a\", \"text\": \"👉 点击查看完整报告\", \"href\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" }
-                      ]
-                    ]
-                  }
-                }
-              }
-            }"
