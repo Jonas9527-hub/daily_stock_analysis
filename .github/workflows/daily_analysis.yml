@@ -272,7 +272,7 @@ jobs:
           retention-days: 30
       
       - name: 显示运行结果
-            - name: 发送飞书报告
+      - name: 发送飞书报告
         if: always()
         env:
           WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
